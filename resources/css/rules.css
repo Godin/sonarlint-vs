@@ -200,6 +200,32 @@ nav a:hover {
     margin: 0 4px 0 0;
     text-decoration: none;
 }
+.tags{
+    margin-right:12px;
+}
+
+.severity:before {
+    font-family: FontAwesome;
+    margin: 0 4px 0 0;
+    text-decoration: none;
+}
+.rule-severity-0:before {
+    color: white;
+    content: '\f10c';
+}
+.rule-severity-1:before {
+    color: #cae3f2;
+    content: '\f05a';
+}
+.rule-severity-2:before {
+    color: #FFBF00;
+    content: '\f071';
+}
+.rule-severity-3:before {
+    color: #d4333f;
+    content: '\f057';
+}
+
 
 #rule-menu-header > h2 {
     padding: 10px 5px 5px 5px;
