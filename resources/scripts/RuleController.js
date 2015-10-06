@@ -320,7 +320,7 @@ var Controllers;
             };
             xobj.send(null);
         };
-        RuleController.defaultVersion = '1.2.0';
+        RuleController.defaultVersion = '1.3.0';
         return RuleController;
     })();
     Controllers.RuleController = RuleController;

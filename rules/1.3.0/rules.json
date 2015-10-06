@@ -1,8 +1,18 @@
 [
   {
+    "Key": "S3262",
+    "Title": "\"params\" should be used on overrides",
+    "Description": "<p>\r\n    Overriding methods automatically inherit the <code>params</code> behavior. To ease readability, this modifier should be explicitly used in\r\n    the overriding method as well.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nclass Base\r\n{\r\n  public virtual void Method(params int[] numbers)\r\n  {\r\n    ...\r\n  }\r\n}\r\nclass Derived : Base\r\n{\r\n  public override void Method(int[] numbers) // Noncompliant, the params is missing.\r\n  {\r\n    ...\r\n  }\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nclass Base\r\n{\r\n  public virtual void Method(params int[] numbers)\r\n  {\r\n    ...\r\n  }\r\n}\r\nclass Derived : Base\r\n{\r\n  public override void Method(params int[] numbers)\r\n  {\r\n    ...\r\n  }\r\n}\r\n</pre>\r\n<h2>Code Fixes</h2><ul><li>Add the \"params\" modifier</li></ul>",
+    "Severity": "Minor",
+    "IdeSeverity": 2,
+    "Tags": [
+      "confusing"
+    ]
+  },
+  {
     "Key": "S2219",
     "Title": "\"Type.IsAssignableFrom()\" should not be used to check object type",
-    "Description": "<p>\r\n    To check the type of an object there are at least three options:\r\n    <ul>\r\n        <li>The simplest and shortest one uses the <code>expr is SomeType</code> operator</li>\r\n        <li>The slightly longer <code>typeInstance.IsInstanceOfType(expr)</code></li>\r\n        <li>The cumbersome and error-prone one uses <code>expr1.GetType().IsAssignableFrom(expr2.GetType())</code></li>\r\n    </ul>\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nA expr1;\r\nB expr2;\r\nif (expr2.GetType().IsAssignableFrom(expr1.GetType())) { /* ... */ } // Noncompliant\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nA expr;\r\nif (expr is MyType) { /* ... */ }\r\n</pre>\r\n\r\nor, when the type is not known at compile time:\r\n\r\n<pre>\r\nA expr;\r\nType myType;\r\nif (myType.IsInstanceOfType(expr)) { /* ... */ }\r\n</pre>",
+    "Description": "<p>\r\n    To check the type of an object there are at least three options:\r\n    <ul>\r\n        <li>The simplest and shortest one uses the <code>expr is SomeType</code> operator</li>\r\n        <li>The slightly longer <code>typeInstance.IsInstanceOfType(expr)</code></li>\r\n        <li>The cumbersome and error-prone one uses <code>expr1.GetType().IsAssignableFrom(expr2.GetType())</code></li>\r\n    </ul>\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nA expr1;\r\nB expr2;\r\nif (expr2.GetType().IsAssignableFrom(expr1.GetType())) { /* ... */ } // Noncompliant\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nA expr;\r\nif (expr is MyType) { /* ... */ }\r\n</pre>\r\n\r\nor, when the type is not known at compile time:\r\n\r\n<pre>\r\nA expr;\r\nType myType;\r\nif (myType.IsInstanceOfType(expr)) { /* ... */ }\r\n</pre><h2>Code Fixes</h2><ul><li>Simplify type checking</li></ul>",
     "Severity": "Major",
     "IdeSeverity": 2,
     "Tags": [
@@ -27,6 +37,60 @@
     "IdeSeverity": 2,
     "Tags": [
       "clumsy"
+    ]
+  },
+  {
+    "Key": "S3253",
+    "Title": "\"base()\" constructor calls should not be explicitly made",
+    "Description": "<p>\r\n    Since the compiler will automatically invoke the base type's no-argument constructor, there's no need to specify its invocation explicitly. Doing so just clutters the code.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nclass X\r\n{\r\n  public X()\r\n  {\r\n    /* ... */\r\n  }\r\n}\r\n\r\nclass Y : X\r\n{\r\n  public Y(int parameter) : base() // Noncompliant\r\n  {\r\n    /* does something with the parameter */\r\n  }\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nclass X\r\n{\r\n  public X()\r\n  {\r\n    /* ... */\r\n  }\r\n}\r\n\r\nclass Y : X\r\n{\r\n  public Y(int parameter)\r\n  {\r\n    /* does something with the parameter */\r\n  }\r\n}\r\n</pre>\r\n<h2>Code Fixes</h2><ul><li>Remove redundant \"base()\" call</li></ul>",
+    "Severity": "Minor",
+    "IdeSeverity": 2,
+    "Tags": [
+      "clumsy"
+    ]
+  },
+  {
+    "Key": "S1939",
+    "Title": "Inheritance list should not be redundant",
+    "Description": "<p>\r\n    An inheritance list entry is redundant if:\r\n    <ul>\r\n        <li>It is <code>Object</code> - all classes extend <code>Object</code> implicitly.</li>\r\n        <li>It is <code>int</code> for an <code>enum</code></li>\r\n        <li>It is a base class of another listed inheritance.</li>\r\n    </ul>\r\n    Such redundant declarations should be removed because they needlessly clutter the code and can be confusing.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\npublic class MyClass : Object  // Noncompliant\r\n\r\nenum MyEnum : int  // Noncompliant\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\npublic class MyClass\r\n\r\nenum MyEnum\r\n</pre>\r\n<h2>Code Fixes</h2><ul><li>Remove redundant declaration</li></ul>",
+    "Severity": "Minor",
+    "IdeSeverity": 2,
+    "Tags": [
+      "clumsy"
+    ]
+  },
+  {
+    "Key": "S2333",
+    "Title": "Redundant modifiers should be removed",
+    "Description": "<p>\r\n    Unnecessary keywords simply clutter the code and should be removed. Specifically:\r\n    <ul>\r\n        <li><code>virtual</code> on members of classes that are never overridden</li>\r\n        <li><code>partial</code> on type declarations that are completely defined in one place</li>\r\n        <li><code>sealed</code> on members of <code>sealed</code> classes</li>\r\n    </ul>\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\ninternal partial class MyClass // Noncompliant;\r\n{\r\n  public virtual void DoSomething()  // Noncompliant; virtual is gratuitous\r\n  {\r\n    // ...\r\n  }\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\ninternal class MyClass\r\n{\r\n  public void DoSomething()\r\n  {\r\n    // ...\r\n  }\r\n}\r\n</pre>\r\n<h2>Code Fixes</h2><ul><li>Remove redundant modifier</li></ul>",
+    "Severity": "Minor",
+    "IdeSeverity": 2,
+    "Tags": [
+      "unused"
+    ]
+  },
+  {
+    "Key": "S818",
+    "Title": "Literal suffixes should be upper case",
+    "Description": "<p>\r\n    Using upper case literal suffixes removes the potential ambiguity between \"1\" (digit 1) and \"l\" (letter el) for declaring literals.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nconst uint a = 0u;      // Noncompliant\r\nconst long b = 0l;      // Noncompliant\r\nconst ulong c = 0Ul;     // Noncompliant\r\nconst ulong d = 0uL;     // Noncompliant\r\nconst decimal e = 1.2m;  // Noncompliant\r\nconst float f = 1.2f;    // Noncompliant\r\nconst double g = 1.2d;    // Noncompliant\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nconst uint a = 0U;\r\nconst long b = 0L;\r\nconst ulong c = 0UL;\r\nconst ulong d = 0UL;\r\nconst decimal e = 1.2M;\r\nconst float f = 1.2F;\r\nconst double g = 1.2D;\r\n</pre>\r\n\r\n<h2>See</h2>\r\n<ul>\r\n    <li>MISRA C++:2008, 2-13-4 - Literal suffixes shall be upper case</li>\r\n    <li>MISRA C:2012, 7.3 - The lowercase character \"l\" shall not be used in a literal suffix</li>\r\n    <li><a href=\"https://www.securecoding.cert.org/confluence/x/koAtAQ\">CERT DCL16-C</a> - Use \"L,\" not \"l,\" to indicate a long value</li>\r\n    <li><a href=\"https://www.securecoding.cert.org/confluence/x/n4AtAQ\">CERT DCL16-CPP</a> - Use \"L,\" not \"l,\" to indicate a long value</li>\r\n</ul>\r\n<h2>Code Fixes</h2><ul><li>Make literal suffix upper case</li></ul>",
+    "Severity": "Minor",
+    "IdeSeverity": 2,
+    "Tags": [
+      "cert",
+      "convention",
+      "misra",
+      "pitfall"
+    ]
+  },
+  {
+    "Key": "S2275",
+    "Title": "Format strings should be passed the correct number of arguments",
+    "Description": "<p>\r\n    Use fewer arguments than are expected in your format string, and you'll get an error at runtime. Use more arguments than are\r\n    expected, and you probably won't get the output you expect. Either way, it's a bug.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nvar s1 = string.Format(\"{0} {1} {2}\", 1, 2); // Noncompliant; too few arguments\r\nvar s2 = string.Format(\"{0}\", 10, 11); // Noncompliant; too many arguments\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\n// Pass the expected number of arguments\r\nvar s1 = string.Format(\"{0} {1} {2}\", 1, 2, 3);\r\nvar s2 = string.Format(\"{0}\", 10);\r\n</pre>\r\nor\r\n<pre>\r\n// Fix the format string\r\nvar s1 = string.Format(\"{0} {1}\", 1, 2);\r\nvar s2 = string.Format(\"{0} {1}\", 10, 11);\r\n</pre>\r\n",
+    "Severity": "Critical",
+    "IdeSeverity": 2,
+    "Tags": [
+      "bug",
+      "pitfall"
     ]
   },
   {
@@ -106,11 +170,21 @@
   {
     "Key": "S3052",
     "Title": "Fields should not be initialized to default values",
-    "Description": "<p>\r\n    The compiler automatically initializes class fields to their default values before setting them with any initialization\r\n    values, so there is no need to explicitly set a field to its default value. Further, under the logic that cleaner code\r\n    is better code, it's considered poor style to do so.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nclass X\r\n{\r\n  public int field = 0; // Noncompliant; defaults to 0. Reinitializing incurs minor performance penalty\r\n  public object o = null; //Noncompliant\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nclass X\r\n{\r\n  public int field;\r\n  public object o;\r\n}\r\n</pre>\r\n",
+    "Description": "<p>\r\n    The compiler automatically initializes class fields to their default values before setting them with any initialization\r\n    values, so there is no need to explicitly set a field to its default value. Further, under the logic that cleaner code\r\n    is better code, it's considered poor style to do so.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nclass X\r\n{\r\n  public int field = 0; // Noncompliant; defaults to 0. Reinitializing incurs minor performance penalty\r\n  public object o = null; //Noncompliant\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nclass X\r\n{\r\n  public int field;\r\n  public object o;\r\n}\r\n</pre>\r\n\r\n<h2>Exceptions</h2>\r\n<code>const</code> fields are ignored.\r\n",
     "Severity": "Minor",
     "IdeSeverity": 2,
     "Tags": [
       "convention"
+    ]
+  },
+  {
+    "Key": "S3246",
+    "Title": "Generic type parameters should be co/contravariant when possible",
+    "Description": "<p>\r\n    In the interests of making code as usable as possible, interfaces and delegates with generic parameters should use the\r\n    <code>out</code> and <code>in</code> modifiers when possible to make the interfaces and delegates covariant and contravariant,\r\n    respectively.\r\n</p>\r\n<p>\r\n    The <code>out</code> keyword can be used when the type parameter is used only as a return type in the interface or delegate.\r\n    Doing so makes the parameter covariant, and allows interface and delegate instances created with a sub-type to be used as\r\n    instances created with a base type. The most notable example of this is <code>IEnumerable&lt;out T&gt;</code>, which allows\r\n    the assignment of an <code>IEnumerable&lt;string&gt;</code> instance to an <code>IEnumerable&lt;object&gt;</code> variable,\r\n    for instance.\r\n</p>\r\n<p>\r\n    The <code>in</code> keyword can be used when the type parameter is used only as a method parameter in the interface or a\r\n    parameter in the delegate. Doing so makes the parameter contravariant, and allows interface and delegate instances created\r\n    with a base type to be used as instances created with a sub-type. I.e. this is the inversion of covariance. The most notable\r\n    example of this is the <code>Action&lt;in T&gt;</code> delegate, which allows the assignment of an\r\n    <code>Action&lt;object&gt;</code> instance to a <code>Action&lt;string&gt;</code> variable, for instance.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\ninterface IConsumer&lt;T&gt;  // Noncompliant\r\n{\r\n    bool Eat(T fruit);\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\ninterface IConsumer&lt;in T&gt;\r\n{\r\n    bool Eat(T fruit);\r\n}\r\n</pre>\r\n",
+    "Severity": "Critical",
+    "IdeSeverity": 2,
+    "Tags": [
+      "api-design"
     ]
   },
   {
@@ -188,7 +262,7 @@
   {
     "Key": "S3217",
     "Title": "\"Explicit\" conversions of \"foreach\" loops should not be used",
-    "Description": "<p>\r\n    The <code>foreach</code> statement was introduced in the C# language prior to generics. To make it easier to work with\r\n    non-generic collections available at that time such as <code>ArrayList</code>, the <code>foreach</code> statements allows\r\n    to downcast the collection's element of type <code>Object</code> into any other type. The problem is that, to achieve that,\r\n    the <code>foreach</code> statements silently performs <code>explicit</code> type conversion, which at runtime can result in\r\n    an <code>InvalidCastException</code> to be thrown.\r\n</p>\r\n<p>\r\n    New C# code should use generics and not rely on <code>foreach</code> statement's silent <code>explicit</code> conversions.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nArrayList list = new ArrayList();\r\nlist.Add(0);\r\nlist.Add(1);\r\n// list.Add(\"surprise!\"); // uncommenting this line will make both foreach below throw an InvalidCastException\r\n\r\nforeach (object elementObject in list)\r\n{\r\n  int element = (int)elementObject; // This \"explicit\" conversion is hidden within the foreach loop\r\n  Console.WriteLine(element);\r\n}\r\n\r\n// can be written in an equivalent but shorter way:\r\n\r\nforeach (int element in list) // Noncompliant\r\n{\r\n  Console.WriteLine(element);\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nList&lt;int&gt; list = new List&lt;int&gt;();\r\nlist.Add(0);\r\nlist.Add(1);\r\n// list.Add(\"surprise!\"); // uncommenting this line won't compile\r\n\r\nforeach (int element in list)\r\n{\r\n  Console.WriteLine(element);\r\n}\r\n</pre>\r\nor\r\n<pre>\r\nArrayList list = new ArrayList();\r\nlist.Add(0);\r\nlist.Add(1);\r\nlist.Add(\"surprise!\");\r\n\r\nforeach (int element in list.OfType&lt;int&gt;())\r\n{\r\n  Console.WriteLine(element);\r\n}\r\n</pre>\r\n",
+    "Description": "<p>\r\n    The <code>foreach</code> statement was introduced in the C# language prior to generics. To make it easier to work with\r\n    non-generic collections available at that time such as <code>ArrayList</code>, the <code>foreach</code> statements allows\r\n    to downcast the collection's element of type <code>Object</code> into any other type. The problem is that, to achieve that,\r\n    the <code>foreach</code> statements silently performs <code>explicit</code> type conversion, which at runtime can result in\r\n    an <code>InvalidCastException</code> to be thrown.\r\n</p>\r\n<p>\r\n    New C# code should use generics and not rely on <code>foreach</code> statement's silent <code>explicit</code> conversions.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nArrayList list = new ArrayList();\r\nlist.Add(0);\r\nlist.Add(1);\r\n// list.Add(\"surprise!\"); // uncommenting this line will make both foreach below throw an InvalidCastException\r\n\r\nforeach (object elementObject in list)\r\n{\r\n  int element = (int)elementObject; // This \"explicit\" conversion is hidden within the foreach loop\r\n  Console.WriteLine(element);\r\n}\r\n\r\n// can be written in an equivalent but shorter way:\r\n\r\nforeach (int element in list) // Noncompliant\r\n{\r\n  Console.WriteLine(element);\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nList&lt;int&gt; list = new List&lt;int&gt;();\r\nlist.Add(0);\r\nlist.Add(1);\r\n// list.Add(\"surprise!\"); // uncommenting this line won't compile\r\n\r\nforeach (int element in list)\r\n{\r\n  Console.WriteLine(element);\r\n}\r\n</pre>\r\nor\r\n<pre>\r\nArrayList list = new ArrayList();\r\nlist.Add(0);\r\nlist.Add(1);\r\nlist.Add(\"surprise!\");\r\n\r\nforeach (int element in list.OfType&lt;int&gt;())\r\n{\r\n  Console.WriteLine(element);\r\n}\r\n</pre>\r\n<h2>Code Fixes</h2><ul><li>Filter collection for the expected type</li></ul>",
     "Severity": "Major",
     "IdeSeverity": 2,
     "Tags": [
@@ -438,7 +512,7 @@
   {
     "Key": "S2934",
     "Title": "Property assignments should not be made for \"readonly\" fields not constrained to reference types",
-    "Description": "<p>\r\n    While the properties of a <code>readonly</code> reference type field can still be changed after initialization,\r\n    those of a <code>readonly</code> value field, such as a <code>struct</code>, cannot.\r\n</p>\r\n<p>\r\n    If the member could be either a <code>class</code> or a <code>struct</code> then assignment to its properties\r\n    could be unreliable, working sometimes but not others.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\ninterface IPoint\r\n{\r\n  int X { get; set; }\r\n  int Y { get; set; }\r\n}\r\n\r\nclass PointManager&lt;T&gt; where T: IPoint\r\n{\r\n  readonly T point;  // this could be a struct\r\n  public PointManager(T point)\r\n  {\r\n    this.point = point;\r\n  }\r\n\r\n  public void MovePointVertically(int newX)\r\n  {\r\n    point.X = newX; //Noncompliant; if point is a struct, then nothing happened\r\n    Console.WriteLine(point.X);\r\n  }\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\ninterface IPoint\r\n{\r\n  int X { get; set; }\r\n  int Y { get; set; }\r\n}\r\n\r\nclass PointManager&lt;T&gt; where T : IPoint\r\n{\r\n  readonly T point;  // this could be a struct\r\n  public PointManager(T point)\r\n  {\r\n    this.point = point;\r\n  }\r\n\r\n  public void MovePointVertically(int newX) // assignment has been removed\r\n  {\r\n    Console.WriteLine(point.X);\r\n  }\r\n}\r\n</pre>\r\nor\r\n<pre>\r\ninterface IPoint\r\n{\r\n  int X { get; set; }\r\n  int Y { get; set; }\r\n}\r\n\r\nclass PointManager&lt;T&gt; where T : class, IPoint\r\n{\r\n  readonly T point;  // this can only be a class\r\n  public PointManager(T point)\r\n  {\r\n    this.point = point;\r\n  }\r\n\r\n  public void MovePointVertically(int newX)\r\n  {\r\n    point.X = newX;  // this assignment is guaranteed to work\r\n    Console.WriteLine(point.X);\r\n  }\r\n}\r\n</pre>\r\n",
+    "Description": "<p>\r\n    While the properties of a <code>readonly</code> reference type field can still be changed after initialization,\r\n    those of a <code>readonly</code> value field, such as a <code>struct</code>, cannot.\r\n</p>\r\n<p>\r\n    If the member could be either a <code>class</code> or a <code>struct</code> then assignment to its properties\r\n    could be unreliable, working sometimes but not others.\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\ninterface IPoint\r\n{\r\n  int X { get; set; }\r\n  int Y { get; set; }\r\n}\r\n\r\nclass PointManager&lt;T&gt; where T: IPoint\r\n{\r\n  readonly T point;  // this could be a struct\r\n  public PointManager(T point)\r\n  {\r\n    this.point = point;\r\n  }\r\n\r\n  public void MovePointVertically(int newX)\r\n  {\r\n    point.X = newX; //Noncompliant; if point is a struct, then nothing happened\r\n    Console.WriteLine(point.X);\r\n  }\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\ninterface IPoint\r\n{\r\n  int X { get; set; }\r\n  int Y { get; set; }\r\n}\r\n\r\nclass PointManager&lt;T&gt; where T : IPoint\r\n{\r\n  readonly T point;  // this could be a struct\r\n  public PointManager(T point)\r\n  {\r\n    this.point = point;\r\n  }\r\n\r\n  public void MovePointVertically(int newX) // assignment has been removed\r\n  {\r\n    Console.WriteLine(point.X);\r\n  }\r\n}\r\n</pre>\r\nor\r\n<pre>\r\ninterface IPoint\r\n{\r\n  int X { get; set; }\r\n  int Y { get; set; }\r\n}\r\n\r\nclass PointManager&lt;T&gt; where T : class, IPoint\r\n{\r\n  readonly T point;  // this can only be a class\r\n  public PointManager(T point)\r\n  {\r\n    this.point = point;\r\n  }\r\n\r\n  public void MovePointVertically(int newX)\r\n  {\r\n    point.X = newX;  // this assignment is guaranteed to work\r\n    Console.WriteLine(point.X);\r\n  }\r\n}\r\n</pre>\r\n<h2>Code Fixes</h2><ul><li>Remove assignment</li><li>Add reference type constraint</li></ul>",
     "Severity": "Critical",
     "IdeSeverity": 2,
     "Tags": [
@@ -592,7 +666,7 @@
   {
     "Key": "S2328",
     "Title": "\"GetHashCode\" should not reference mutable fields",
-    "Description": "<p>\r\n    <code>GetHashCode</code> is used to file an object in a <code>Dictionary</code> or <code>Hashtable</code>.\r\n    If <code>GetHashCode</code> uses non-<code>readonly</code> fields and those fields change after the object\r\n    is stored, the object immediately becomes mis-filed in the <code>Hashtable</code>. Any subsequent test to\r\n    see if the object is in the <code>Hashtable</code> will return a false negative.\r\n</p>\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\npublic class Person\r\n{\r\n  public int age;\r\n  public string name;\r\n\r\n  public override int GetHashCode()\r\n  {\r\n    int hash = 12;\r\n    hash += this.age.GetHashCode(); // Noncompliant\r\n    hash += this.name.GetHashCode(); // Noncompliant\r\n    return hash;\r\n  }\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\npublic class Person\r\n{\r\n  public readonly DateTime birthday;\r\n  public string name;\r\n\r\n  public override int GetHashCode()\r\n  {\r\n    int hash = 12;\r\n    hash += this.birthday.GetHashCode();\r\n    return hash;\r\n  }\r\n</pre>\r\n",
+    "Description": "<p>\r\n    <code>GetHashCode</code> is used to file an object in a <code>Dictionary</code> or <code>Hashtable</code>.\r\n    If <code>GetHashCode</code> uses non-<code>readonly</code> fields and those fields change after the object\r\n    is stored, the object immediately becomes mis-filed in the <code>Hashtable</code>. Any subsequent test to\r\n    see if the object is in the <code>Hashtable</code> will return a false negative.\r\n</p>\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\npublic class Person\r\n{\r\n  public int age;\r\n  public string name;\r\n\r\n  public override int GetHashCode()\r\n  {\r\n    int hash = 12;\r\n    hash += this.age.GetHashCode(); // Noncompliant\r\n    hash += this.name.GetHashCode(); // Noncompliant\r\n    return hash;\r\n  }\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\npublic class Person\r\n{\r\n  public readonly DateTime birthday;\r\n  public string name;\r\n\r\n  public override int GetHashCode()\r\n  {\r\n    int hash = 12;\r\n    hash += this.birthday.GetHashCode();\r\n    return hash;\r\n  }\r\n</pre>\r\n<h2>Code Fixes</h2><ul><li>Make field \"readonly\"</li></ul>",
     "Severity": "Critical",
     "IdeSeverity": 2,
     "Tags": [
@@ -736,11 +810,12 @@
   {
     "Key": "S2760",
     "Title": "Sequential tests should not check the same condition",
-    "Description": "<p>\r\n    When the same condition is checked twice in a row, it is either inefficient - why not combine the checks? - or an error -\r\n    some other condition should have been checked in the second test.\r\n</p>\r\n<p>\r\n    This rule raises an issue when sequential <code>if</code>s or <code>switch</code>es test the same condition.\r\n</p>\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nif (a == b)\r\n{\r\n  doTheThing(b);\r\n}\r\nif (a == b) // Noncompliant; is this really what was intended?\r\n{\r\n  doTheThing(c);\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nif (a == b)\r\n{\r\n  doTheThing(b);\r\n  doTheThing(c);\r\n}\r\n</pre>\r\n\r\nor\r\n\r\n<pre>\r\nif (a == b)\r\n{\r\n  doTheThing(b);\r\n}\r\nif (b == c)\r\n{\r\n  doTheThing(c);\r\n}\r\n</pre>\r\n\r\n<h2>Exceptions</h2>\r\n<p>\r\n    This rule ignores sequential <code>if</code> statements when any symbols checked in the condition is modified within\r\n    the first <code>if</code>.\r\n</p>",
-    "Severity": "Critical",
+    "Description": "<p>\r\n    When the same condition is checked twice in a row, it is either confusing - why have separate checks? - or an error - some other condition\r\n    should have been checked in the second test.\r\n</p>\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nif (a == b)\r\n{\r\n  doTheThing(b);\r\n}\r\nif (a == b) // Noncompliant; is this really what was intended?\r\n{\r\n  doTheThing(c);\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nif (a == b)\r\n{\r\n  doTheThing(b);\r\n  doTheThing(c);\r\n}\r\n</pre>\r\n\r\nor\r\n\r\n<pre>\r\nif (a == b)\r\n{\r\n  doTheThing(b);\r\n}\r\nif (b == c)\r\n{\r\n  doTheThing(c);\r\n}\r\n</pre>\r\n\r\n<h2>Exceptions</h2>\r\n<p>\r\n    Since it is a common pattern to test a variable, reassign it if it fails the test, then re-test it, that pattern is ignored.\r\n</p>",
+    "Severity": "Major",
     "IdeSeverity": 2,
     "Tags": [
-      "bug"
+      "clumsy",
+      "suspicious"
     ]
   },
   {
@@ -793,7 +868,7 @@
   {
     "Key": "S1186",
     "Title": "Methods should not be empty",
-    "Description": "<p>\r\nThere are several reasons for a method not to have a method body:\r\n  <ul>\r\n    <li>It is an unintentional omission, and should be fixed.</li>\r\n    <li>It is not yet, or never will be, supported. In this case an <code>NotSupportedException</code> should be thrown.</li>\r\n    <li>The method is an intentionally-blank override. In this case a nested comment should explain the reason for the blank override.</li>\r\n  </ul>\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\npublic override void DoSomething()\r\n{\r\n}\r\n\r\npublic override void doSomethingElse()\r\n{\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\npublic override void DoSomething()\r\n{\r\n  // Do nothing because of X and Y.\r\n}\r\n\r\npublic override void doSomethingElse()\r\n{\r\n  throw new NotSupportedException();\r\n}\r\n</pre>\r\n\r\n<h2>Exceptions</h2>\r\n<p>An abstract class' may have empty methods, in order to provide default implementations for child classes.</p>\r\n<pre>\r\nabstract class Animal\r\n{\r\n  public void Speak()\r\n  {\r\n  }\r\n}\r\n</pre>\r\n",
+    "Description": "<p>\r\nThere are several reasons for a method not to have a method body:\r\n  <ul>\r\n    <li>It is an unintentional omission, and should be fixed.</li>\r\n    <li>It is not yet, or never will be, supported. In this case an <code>NotSupportedException</code> should be thrown.</li>\r\n    <li>The method is an intentionally-blank override. In this case a nested comment should explain the reason for the blank override.</li>\r\n  </ul>\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\npublic override void DoSomething()\r\n{\r\n}\r\n\r\npublic override void doSomethingElse()\r\n{\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\npublic override void DoSomething()\r\n{\r\n  // Do nothing because of X and Y.\r\n}\r\n\r\npublic override void doSomethingElse()\r\n{\r\n  throw new NotSupportedException();\r\n}\r\n</pre>\r\n\r\n<h2>Exceptions</h2>\r\n<p>An abstract class' may have empty methods, in order to provide default implementations for child classes.</p>\r\n<pre>\r\nabstract class Animal\r\n{\r\n  public void Speak()\r\n  {\r\n  }\r\n}\r\n</pre>\r\n<h2>Code Fixes</h2><ul><li>Throw NotSupportedException</li><li>Add comment</li></ul>",
     "Severity": "Major",
     "IdeSeverity": 2,
     "Tags": [
@@ -813,7 +888,7 @@
   {
     "Key": "S1116",
     "Title": "Empty statements should be removed",
-    "Description": "<p>\r\n  Empty statements, i.e. <code>;</code>, are usually introduced by mistake, for example because:\r\n  <ul>\r\n    <li>It was meant to be replaced by an actual statement, but this was forgotten.</li>\r\n    <li>There was a typo which lead the semicolon to be doubled, i.e. <code>;;</code>.</li>\r\n  </ul>\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nvoid doSomething()\r\n{\r\n  ; // Noncompliant - was used as a kind of TODO marker\r\n}\r\n\r\nvoid doSomethingElse()\r\n{\r\n  Console.WriteLine(\"Hello, world!\");;  // Noncompliant - double ;\r\n  ...\r\n  // Rarely, they are used on purpose as the body of a loop. It is a bad practice to\r\n  // have side-effects outside of the loop body\r\n  for (int i = 0; i < 3; Console.WriteLine(i), i++); // Noncompliant\r\n  ...\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nvoid doSomething()\r\n{\r\n}\r\n\r\nvoid doSomethingElse()\r\n{\r\n  Console.WriteLine(\"Hello, world!\");\r\n  ...\r\n  for (int i = 0; i < 3; i++)\r\n  {\r\n    Console.WriteLine(i);\r\n   }\r\n  ...\r\n}\r\n</pre>\r\n\r\n<h2>See</h2>\r\n\r\n<ul>\r\n    <li>MISRA C:2004, 14.3 - Before preprocessing, a null statement shall only occur on a line by itself; it may be followed by a comment provided that the first character following the null statement is a white-space character.</li>\r\n    <li>MISRA C++:2008, 6-2-3 - Before preprocessing, a null statement shall only occur on a line by itself; it may be followed by a comment, provided that the first character following the null statement is a white-space character.</li>\r\n    <li><a href=\"https://www.securecoding.cert.org/confluence/x/NYA5\">CERT, MSC12-C</a> - Detect and remove code that has no effect</li>\r\n    <li><a href=\"https://www.securecoding.cert.org/confluence/x/SIIyAQ\">CERT, MSC12-CPP</a> - Detect and remove code that has no effect</li>\r\n</ul>",
+    "Description": "<p>\r\n  Empty statements, i.e. <code>;</code>, are usually introduced by mistake, for example because:\r\n  <ul>\r\n    <li>It was meant to be replaced by an actual statement, but this was forgotten.</li>\r\n    <li>There was a typo which lead the semicolon to be doubled, i.e. <code>;;</code>.</li>\r\n  </ul>\r\n</p>\r\n\r\n<h2>Noncompliant Code Example</h2>\r\n<pre>\r\nvoid doSomething()\r\n{\r\n  ; // Noncompliant - was used as a kind of TODO marker\r\n}\r\n\r\nvoid doSomethingElse()\r\n{\r\n  Console.WriteLine(\"Hello, world!\");;  // Noncompliant - double ;\r\n  ...\r\n  // Rarely, they are used on purpose as the body of a loop. It is a bad practice to\r\n  // have side-effects outside of the loop body\r\n  for (int i = 0; i < 3; Console.WriteLine(i), i++); // Noncompliant\r\n  ...\r\n}\r\n</pre>\r\n\r\n<h2>Compliant Solution</h2>\r\n<pre>\r\nvoid doSomething()\r\n{\r\n}\r\n\r\nvoid doSomethingElse()\r\n{\r\n  Console.WriteLine(\"Hello, world!\");\r\n  ...\r\n  for (int i = 0; i < 3; i++)\r\n  {\r\n    Console.WriteLine(i);\r\n   }\r\n  ...\r\n}\r\n</pre>\r\n\r\n<h2>See</h2>\r\n\r\n<ul>\r\n    <li>MISRA C:2004, 14.3 - Before preprocessing, a null statement shall only occur on a line by itself; it may be followed by a comment provided that the first character following the null statement is a white-space character.</li>\r\n    <li>MISRA C++:2008, 6-2-3 - Before preprocessing, a null statement shall only occur on a line by itself; it may be followed by a comment, provided that the first character following the null statement is a white-space character.</li>\r\n    <li><a href=\"https://www.securecoding.cert.org/confluence/x/NYA5\">CERT, MSC12-C</a> - Detect and remove code that has no effect</li>\r\n    <li><a href=\"https://www.securecoding.cert.org/confluence/x/SIIyAQ\">CERT, MSC12-CPP</a> - Detect and remove code that has no effect</li>\r\n</ul><h2>Code Fixes</h2><ul><li>Remove empty statement</li></ul>",
     "Severity": "Minor",
     "IdeSeverity": 2,
     "Tags": [
