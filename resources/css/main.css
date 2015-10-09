@@ -187,6 +187,7 @@ section.split ul {
 
 .button-link {
     display: inline-block;
+    float: left;
     margin: 8px;
     padding: 8px 10px;
     background: #4479BA;
