@@ -10,6 +10,10 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
 using EnvDTE;
+using System.Net.Sockets;
+using Google.Protobuf;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SonarLint.Cpp
 {
@@ -68,12 +72,14 @@ namespace SonarLint.Cpp
             dte = (DTE)GetService(typeof(SDTE));
             documentEvents = dte.Events.DocumentEvents;
             documentEvents.DocumentSaved += documentSaved;
+            errorListProvider = new ErrorListProvider(this);
         }
 
         #endregion
 
         private static DTE dte;
         private DocumentEvents documentEvents;
+        private static ErrorListProvider errorListProvider;
 
         private void documentSaved(Document document)
         {
@@ -82,7 +88,110 @@ namespace SonarLint.Cpp
                 return;
             }
 
-            VsShellUtilities.ShowMessageBox(this, "C/C++ document saved", "", OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_OK, OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+            // TODO(Godin): should be asynchronous
+            updateErrorList(document);
+        }
+
+        private void updateErrorList(Document document)
+        {
+            Project project = document.ProjectItem.ContainingProject;
+            Configuration configuration = document.ProjectItem.ConfigurationManager.ActiveConfiguration;
+
+            Request request = createRequest(project.Object, configuration);
+            request.File = document.FullName;
+
+            Response response = analyze(request);
+
+            List<ErrorTask> toRemove = new List<ErrorTask>();
+            String d = document.FullName;
+            IVsHierarchy projectHierarchy = getProjectHierarchy(project);
+            foreach (ErrorTask t in errorListProvider.Tasks.OfType<ErrorTask>())
+            {
+                if (t.Text.StartsWith("SonarQube:") && t.HierarchyItem == projectHierarchy && t.Document == d)
+                {
+                    toRemove.Add(t);
+                }
+            }
+            foreach (ErrorTask t in toRemove)
+            {
+                errorListProvider.Tasks.Remove(t);
+            }
+
+            foreach (Response.Types.Issue issue in response.Issue)
+            {
+                var error = new ErrorTask
+                {
+                    Document = document.FullName,
+                    Category = TaskCategory.CodeSense,
+                    ErrorCategory = TaskErrorCategory.Warning,
+                    Text = "SonarQube: " + issue.Msg,
+                    Line = issue.Line,
+                    HierarchyItem = projectHierarchy
+                };
+                error.Navigate += new EventHandler(error_Navigate);
+                errorListProvider.Tasks.Add(error);
+            }
+        }
+
+        private IVsHierarchy getProjectHierarchy(Project project)
+        {
+            IVsSolution ivSSolution = (IVsSolution)this.GetService(typeof(IVsSolution));
+            IVsHierarchy hierarchy = null;
+            int hr = ivSSolution.GetProjectOfUniqueName(project.UniqueName, out hierarchy);
+            // TODO(Godin): check return value on error code?
+            return hierarchy;
+        }
+
+        private void error_Navigate(object sender, EventArgs e)
+        {
+            var error = sender as ErrorTask;
+            errorListProvider.Navigate(error, new Guid(EnvDTE.Constants.vsViewKindCode));
+        }
+
+        private Request createRequest(dynamic project, Configuration configuration)
+        {
+            Request request = new Request();
+            dynamic config = project.Configurations.Item(configuration.ConfigurationName);
+            dynamic toolsCollection = config.Tools;
+            foreach (var tool in toolsCollection)
+            {
+                if (tool.GetType().GetInterface("Microsoft.VisualStudio.VCProjectEngine.VCCLCompilerTool") == null)
+                {
+                    continue;
+                }
+                // TODO(Godin): use this data:
+                String define = tool.PreprocessorDefinitions;
+                String undefine = tool.UndefinePreprocessorDefinitions;
+                String[] includes = tool.FullIncludePath.Split(';');
+                for (int i = 0; i < includes.Length; i++)
+                {
+                    includes[i] = config.Evaluate(includes[i]);
+                }
+                request.SearchPath.Add(includes);
+                break;
+            }
+            return request;
+        }
+
+        private Response analyze(Request request)
+        {
+            Response response;
+            try {
+                // TODO(Godin): use pipes
+                using (TcpClient client = new TcpClient())
+                {
+                    client.Connect("127.0.0.1", 9999);
+                    NetworkStream stream = client.GetStream();
+                    request.WriteDelimitedTo(stream);
+                    response = Response.Parser.ParseDelimitedFrom(stream);
+                    client.Close();
+                }
+            } catch (Exception e)
+            {
+                response = new Response();
+                response.Issue.Add(new Response.Types.Issue() { Msg = e.Message });
+            }
+            return response;
         }
     }
 }

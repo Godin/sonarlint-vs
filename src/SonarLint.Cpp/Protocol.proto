@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option csharp_namespace = "SonarLint.Cpp";
+
+message Request {
+  string file = 1;
+
+  repeated string searchPath = 3;
+}
+
+message Response {
+  message Issue {
+    string msg = 1;
+	int32 line = 2;
+  }
+
+  repeated Issue issue = 1;
+}
