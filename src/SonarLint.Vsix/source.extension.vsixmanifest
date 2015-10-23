@@ -22,5 +22,6 @@
   <Assets>
     <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="SonarLint" Path="|SonarLint|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" Path="|SonarLint|" d:ProjectName="SonarLint" />
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="SonarLint.Cpp" Path="|SonarLint.Cpp;PkgdefProjectOutputGroup|" />
   </Assets>
 </PackageManifest>
