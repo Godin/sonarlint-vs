@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.Win32;
+using EnvDTE;
 
 namespace SonarLint.Cpp
 {
@@ -63,8 +64,25 @@ namespace SonarLint.Cpp
             base.Initialize();
 
             VsShellUtilities.ShowMessageBox(this, "SonarLint.Cpp initialization", "", OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_OK, OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+
+            dte = (DTE)GetService(typeof(SDTE));
+            documentEvents = dte.Events.DocumentEvents;
+            documentEvents.DocumentSaved += documentSaved;
         }
 
         #endregion
+
+        private static DTE dte;
+        private DocumentEvents documentEvents;
+
+        private void documentSaved(Document document)
+        {
+            if (document == null || document.Language != "C/C++")
+            {
+                return;
+            }
+
+            VsShellUtilities.ShowMessageBox(this, "C/C++ document saved", "", OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_OK, OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
+        }
     }
 }
