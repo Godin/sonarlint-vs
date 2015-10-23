@@ -32,6 +32,7 @@ namespace SonarLint.Cpp
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)] // Info on this package for Help/About
     [Guid(CppVSPackage.PackageGuidString)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string)]
     [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1650:ElementDocumentationMustBeSpelledCorrectly", Justification = "pkgdef, VS and vsixmanifest are valid VS terms")]
     public sealed class CppVSPackage : Package
     {
@@ -60,6 +61,8 @@ namespace SonarLint.Cpp
         protected override void Initialize()
         {
             base.Initialize();
+
+            VsShellUtilities.ShowMessageBox(this, "SonarLint.Cpp initialization", "", OLEMSGICON.OLEMSGICON_INFO, OLEMSGBUTTON.OLEMSGBUTTON_OK, OLEMSGDEFBUTTON.OLEMSGDEFBUTTON_FIRST);
         }
 
         #endregion
