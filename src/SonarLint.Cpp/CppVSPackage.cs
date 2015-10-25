@@ -11,6 +11,7 @@ using System.Linq;
 using System.Collections.Concurrent;
 using System.Threading.Tasks;
 using System.IO;
+using System.Diagnostics;
 
 namespace SonarLint.Cpp
 {
@@ -71,7 +72,13 @@ namespace SonarLint.Cpp
             documentEvents.DocumentSaved += documentSaved;
             errorListProvider = new ErrorListProvider(this);
 
-            worker = new Worker();
+            IVsOutputWindow s = (IVsOutputWindow)GetService(typeof(SVsOutputWindow));
+            Guid paneGuid = Guid.NewGuid();
+            s.CreatePane(ref paneGuid, "SonarLint for C/C++", Convert.ToInt32(true), Convert.ToInt32(false));
+            IVsOutputWindowPane pane;
+            s.GetPane(ref paneGuid, out pane);
+
+            worker = new Worker(pane);
             worker.Start();
         }
 
@@ -173,20 +180,49 @@ namespace SonarLint.Cpp
 
     public class Worker
     {
+        private System.Diagnostics.Process process;
+        private IVsOutputWindowPane pane;
+
         private CommunicationChannel communicationChannel;
         private System.Threading.Thread WorkerThread;
         private BlockingCollection<Tuple<Request, TaskCompletionSource<Response>>> queue = new BlockingCollection<Tuple<Request, TaskCompletionSource<Response>>>();
 
-        public Worker()
+        public Worker(IVsOutputWindowPane pane)
         {
+            this.pane = pane;
             WorkerThread = new System.Threading.Thread(() => { this.Work(); });
         }
 
         public void Start()
         {
+            // TODO(Godin): use Guid for pipe name to avoid conflicts
             communicationChannel = new PipeCommunicationChannel();
-            // TODO(Godin): start client automatically
+
+            // TODO(Godin): use embedded jar
+            //String jarPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "daemon.jar");
+            String jarPath = @"Z:\cli.jar";
+            process = new System.Diagnostics.Process();
+            process.StartInfo = new ProcessStartInfo()
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                FileName = @"C:\ProgramData\Oracle\Java\javapath\java.exe",
+                Arguments = String.Format("-cp \"{0}\" com.sonar.cpp.daemon.Daemon", jarPath)
+            };
+            process.OutputDataReceived += ProcessOutputReceived;
+            process.ErrorDataReceived += ProcessOutputReceived;
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
             WorkerThread.Start();
+        }
+
+        public void ProcessOutputReceived(object sender, DataReceivedEventArgs e)
+        {
+            pane.OutputStringThreadSafe(e.Data + "\r\n");
         }
 
         public Task<Response> Send(Request request)
@@ -198,6 +234,7 @@ namespace SonarLint.Cpp
 
         private void Work()
         {
+            // FIXME(Godin): if client can't connect, we will be blocked here and hence queries would accumulate in queue
             Stream stream = communicationChannel.WaitForConnection();
 
             while (true)
