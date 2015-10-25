@@ -31,9 +31,9 @@ namespace SonarLint.Cpp
     {
         private NamedPipeServerStream pipe;
 
-        public PipeCommunicationChannel()
+        public PipeCommunicationChannel(string pipeName)
         {
-            pipe = new NamedPipeServerStream("SonarLint.Cpp", PipeDirection.InOut);
+            pipe = new NamedPipeServerStream(pipeName, PipeDirection.InOut);
         }
 
         public Stream WaitForConnection()

@@ -195,8 +195,8 @@ namespace SonarLint.Cpp
 
         public void Start()
         {
-            // TODO(Godin): use Guid for pipe name to avoid conflicts
-            communicationChannel = new PipeCommunicationChannel();
+            String pipeName = "SonarLint.Cpp-" + Guid.NewGuid();
+            communicationChannel = new PipeCommunicationChannel(pipeName);
 
             // TODO(Godin): use embedded jar
             //String jarPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "daemon.jar");
@@ -209,7 +209,8 @@ namespace SonarLint.Cpp
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 FileName = @"C:\ProgramData\Oracle\Java\javapath\java.exe",
-                Arguments = String.Format("-cp \"{0}\" com.sonar.cpp.daemon.Daemon", jarPath)
+                // (Godin): if needed we can send all additional arguments as first message
+                Arguments = "-cp \"" + jarPath + "\" com.sonar.cpp.daemon.Daemon " + pipeName
             };
             process.OutputDataReceived += ProcessOutputReceived;
             process.ErrorDataReceived += ProcessOutputReceived;
@@ -220,7 +221,7 @@ namespace SonarLint.Cpp
             WorkerThread.Start();
         }
 
-        public void ProcessOutputReceived(object sender, DataReceivedEventArgs e)
+        private void ProcessOutputReceived(object sender, DataReceivedEventArgs e)
         {
             pane.OutputStringThreadSafe(e.Data + "\r\n");
         }
